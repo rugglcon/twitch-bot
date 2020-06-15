@@ -1,0 +1,10 @@
+{
+  "extends": "tsconfigs/nodejs-executable",
+  "compilerOptions": {
+    "outDir": "lib",
+    "noImplicitAny": false
+  },
+  "include": [
+    "src/**/*"
+  ]
+}
