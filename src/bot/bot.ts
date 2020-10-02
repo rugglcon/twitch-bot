@@ -56,7 +56,7 @@ client.on('message', (target, context, msg, self) => {
         helpMessage += `!${commandName} `
       })
       const extraCommands = [
-        '!vox', '!levelup', '!developers', '!hack', '!f'
+        '!vox', '!levelup', '!developers', '!hack', '!f', '!uptime'
       ]
       helpMessage += extraCommands.join(' ')
       client.say(target, `${helpMessage}`)
