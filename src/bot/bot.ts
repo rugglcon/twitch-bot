@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import { client } from './modules/client'
+import upTime from './modules/upTime'
 import badWordsRegExp from 'badwords/regexp'
 import vox from './modules/vox'
 import express from 'express'
@@ -8,8 +9,32 @@ import { commands } from './commands'
 import { keywords } from './keywords'
 import { readData } from './lib/readData'
 import { writeData } from './lib/writeData'
+import { exists, readJson, writeJson } from './modules/file'
+import isSameDay from './modules/isSameDay'
 
 let eventSourceListener: (command: string) => void
+
+// Stamp the data.json startTime with a new date each time.
+// So we can calculate up time
+const dataFilePath = './data.json'
+const setUpTimeDateStamp = async () => {
+  const dataExists = await exists(dataFilePath)
+  if (!dataExists) {
+    await writeJson(dataFilePath, {
+      startTime: new Date()
+    })
+  } else {
+    const data = await readJson(dataFilePath)
+    const { startTime } = data
+    if (!isSameDay(new Date(startTime as string), new Date())) {
+      // make a new stamp for today
+      await writeJson(dataFilePath, {
+        startTime: new Date()
+      })
+    }
+  }
+}
+setUpTimeDateStamp()
 
 client.on('connected', (addr, port) => {
   console.log(`* Connected to ${addr}:${port}`)
@@ -94,6 +119,14 @@ client.on('message', (target, context, msg, self) => {
       const xpToNextLevel = xpToLevel - xpRemain
       client.say(target, `@${user} gained 1 experience point and has ${data[user].points} total points. Current Level: ${data[user].level}. Only ${xpToNextLevel} points away from Level ${data[user].level + 1} `)
       writeData(dataPath, data)
+    }
+
+    if (command === 'uptime') {
+      upTime().then(minutes => {
+        const hours = Math.floor(minutes / 60)
+        const min = Math.round(((minutes / 60) - hours) * 60)
+        client.say(target, `AdVolKit has been streaming for ${hours} hours and ${min} min`)
+      })
     }
   // Handle Messages
   } else if (message !== undefined) {
