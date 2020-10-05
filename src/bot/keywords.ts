@@ -1,4 +1,6 @@
-export const keywords = {
+import { Commands } from './commands'
+
+export const keywords: Commands = {
   PJSalt: {
     say: 'Salty Salty Salty Salty Salty Salty Salty Salty Salty Salty Salty Salty',
     text: 'PJSalt PJSalt PJSalt PJSalt PJSalt PJSalt PJSalt PJSalt PJSalt'
@@ -26,10 +28,21 @@ export const keywords = {
   coffee: {
     text: 'damn good coffee is always damn good'
   },
-  hi: {
-    text: 'sup'
-  },
   hello: {
-    text: 'hey there'
+    text: [
+      'hey there',
+      'hey dude',
+      'hi',
+      'yo yo yo',
+      'welcome to the stream'
+    ]
+  },
+  nightbot: {
+    text: [
+      '@nightbot? more like daybot! LUL',
+      '@nightbot smells of cheese',
+      '@nightbot is like a box of chocolates...',
+      '@nightbot, why u do dis'
+    ]
   }
 }

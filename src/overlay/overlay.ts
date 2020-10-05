@@ -7,7 +7,7 @@ import { h } from 'snabbdom/build/package/h'
 import { VNode } from 'snabbdom/build/package/vnode'
 import Delay from './lib/Delay'
 
-import { commands } from './commands'
+import { loadAudio } from './lib/loadAudio'
 
 const patch = init([ // Init patch function with chosen modules
   classModule, // makes it easy to toggle classes
@@ -19,7 +19,11 @@ const patch = init([ // Init patch function with chosen modules
 const container = document.createElement('div')
 document.body.appendChild(container)
 
-const state = {
+interface State {
+  gif: null | string
+}
+
+const state: State = {
   gif: null
 }
 
@@ -56,24 +60,26 @@ const eventSource = new EventSource('http://0.0.0.0:4001/connect')
 
 const resetStateDelay = new Delay()
 
-eventSource.onmessage = (e) => {
-  const { command } = JSON.parse(e.data)
+eventSource.onmessage = async (e) => {
+  const data = JSON.parse(e.data)
+  const { gif, sound } = data
+  let { duration = 1000 } = data
 
-  if (Object.prototype.hasOwnProperty.call(commands, command)) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const { gif, sound, duration } = commands[command]
-    if (sound) {
-      const audio = new Audio(sound)
-      audio.play()
-    }
-    if (gif && duration) {
-      state.gif = gif
+  if (sound) {
+    // const audio = new Audio(sound)
+    const audio = await loadAudio(sound)
+    // use audio duration for gif display duration
+    duration = audio.duration * 1000 // convert s to ms
+    audio.play()
+  }
+
+  if (gif) {
+    state.gif = gif
+    render()
+    // Reset gif to null after a time
+    resetStateDelay.start(() => {
+      state.gif = null
       render()
-      resetStateDelay.start(() => {
-        state.gif = null
-        render()
-      }, duration)
-    }
+    }, duration)
   }
 }
